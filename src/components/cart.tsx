@@ -22,6 +22,9 @@ interface CartApi {
   setQuantity: (variantId: string, quantity: number) => void;
   remove: (variantId: string) => void;
   clear: () => void;
+  bagOpen: boolean;
+  openBag: () => void;
+  closeBag: () => void;
 }
 
 const KEY = "pip-cart-v1";
@@ -46,6 +49,7 @@ function load(): CartItem[] {
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [ready, setReady] = useState(false);
+  const [bagOpen, setBagOpen] = useState(false);
 
   useEffect(() => {
     setItems(load());
@@ -85,8 +89,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         ),
       remove: (variantId) => save(items.filter((i) => i.variantId !== variantId)),
       clear: () => save([]),
+      bagOpen,
+      openBag: () => setBagOpen(true),
+      closeBag: () => setBagOpen(false),
     }),
-    [items, ready, save],
+    [items, ready, save, bagOpen],
   );
 
   return <CartContext.Provider value={api}>{children}</CartContext.Provider>;

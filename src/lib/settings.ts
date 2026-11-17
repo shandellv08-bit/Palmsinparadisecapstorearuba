@@ -19,6 +19,7 @@ export interface Settings {
   returns_policy: string | null;
   privacy_policy: string | null;
   terms: string | null;
+  announcement: string | null;
 }
 
 export const EMPTY_SETTINGS: Settings = {
@@ -42,9 +43,10 @@ export const EMPTY_SETTINGS: Settings = {
   returns_policy: null,
   privacy_policy: null,
   terms: null,
+  announcement: null,
 };
 
 export const SETTINGS_COLUMNS = Object.keys(EMPTY_SETTINGS).join(", ");
 
 /** The name to show. The business name is the one fact we know for certain. */
-export const displayName = (s: Settings) => s.business_name?.trim() || "Palms in Paradise";
+export const displayName = (s: Settings) => s.business_name?.trim() || "Palms in Paradise Aruba";

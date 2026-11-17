@@ -3,7 +3,7 @@
 Online store and owner dashboard for Palms in Paradise, a cap store in Aruba.
 One Next.js 15 app, one Supabase (Postgres) database.
 
-- **Store** (`/`): browse caps, filter by team, style, size and stock, order for pickup or delivery, contact form.
+- **Store** (`/`): laid out like a retail cap store. Optional announcement strip, header with search, a style menu and a team menu (slide-out menu on phones), home banner with shop by style / new arrivals / shop by team, shop page with filter sidebar and sorting, product page with gallery, size grid, fitted size guide, slide-out bag and a sticky buy bar on phones, checkout for pickup or delivery, contact form.
 - **Dashboard** (`/admin`): orders, products and photos, stock, customers, messages, sales and margin (with CSV), store settings, team.
 
 Nothing about the business is made up. Anything Shan has not entered (phone, address, policies, prices…) shows as **"not set"**.

@@ -418,10 +418,11 @@ export async function saveSettings(_prev: ActionResult, form: FormData): Promise
       returns_policy: str(8000),
       privacy_policy: str(8000),
       terms: str(8000),
+      announcement: str(200),
     })
     .safeParse({
       ...Object.fromEntries(
-        ["business_name", "tagline", "about", "currency", "phone", "whatsapp", "email", "instagram", "address", "opening_hours", "pickup_instructions", "delivery_fee_cents", "free_delivery_threshold_cents", "delivery_areas", "low_stock_threshold", "returns_policy", "privacy_policy", "terms"].map((k) => [k, g(k)]),
+        ["business_name", "tagline", "about", "currency", "phone", "whatsapp", "email", "instagram", "address", "opening_hours", "pickup_instructions", "delivery_fee_cents", "free_delivery_threshold_cents", "delivery_areas", "low_stock_threshold", "returns_policy", "privacy_policy", "terms", "announcement"].map((k) => [k, g(k)]),
       ),
       pickup_enabled: form.get("pickup_enabled") === "on",
       delivery_enabled: form.get("delivery_enabled") === "on",

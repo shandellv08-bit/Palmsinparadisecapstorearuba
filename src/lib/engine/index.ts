@@ -7,3 +7,4 @@ export * from "./text";
 export * from "./readiness";
 export * from "./catalog";
 export * from "./reports";
+export * from "./storefront";

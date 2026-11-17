@@ -6,7 +6,16 @@
 - Checkout for pickup and delivery with stock locking (no overselling), delivery fee and free-delivery threshold, returning customers recognised by phone, order confirmation page.
 - Store: home, shop with filters and sorting, product page with size picker, sold-out handling, contact form, info pages (about, delivery, returns, privacy, terms) from settings.
 - Dashboard: overview with go-live checklist, orders list and detail with timeline, status steps, mark paid / refunded, cancel with optional restock, printable pack slip; products with photos (resized to WebP in the browser, signed upload), sizes, cost, stock adjustments; stock overview and movement log; customers; messages; sales and margin per product with CSV export; store settings; team (add member, change role, deactivate).
-- Tests: 25 engine tests, 27 real-Postgres tests, 8 browser flows on desktop and 390px phone.
+- Tests at that point: 25 engine, 27 database, 8 browser flows.
+
+## Done (17 Nov 2026): retail store layout
+
+- Announcement strip (from settings), new header with Palms in Paradise Aruba wordmark and palm mark, search, style menu, team mega menu, phone slide-out menu.
+- Home: banner, shop by style tiles, new arrivals rail, shop by team, featured grid, pickup/delivery/questions strip.
+- Shop: filter sidebar with counts (availability, style, size, team), active filter chips, sort, phone filter drawer, cards with New / Sold out badges, team label and size availability, second photo on hover.
+- Product: gallery with thumbnails, size grid, fitted size guide, slide-out bag on add, sticky buy bar on phones, Details / Pickup & delivery / Returns sections, "More from this team", product data for search engines.
+- Size guide page. Product pages are pre-built at deploy time.
+- Tests: 30 engine, 27 database, 9 browser flows on desktop and phone.
 
 ## Next, in order
 

@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Contact" };
 export default async function Contact({ searchParams }: { searchParams: Promise<{ about?: string }> }) {
   const [s, { about }] = await Promise.all([getSettings(), searchParams]);
   return (
-    <div className="wrap section two-col">
+    <div className="wrap page-pad two-col">
       <div>
         <h1>Contact</h1>
         <dl>

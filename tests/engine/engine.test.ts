@@ -271,3 +271,55 @@ describe("reports", () => {
     );
   });
 });
+
+import { availabilityLabel, fittedSizeValue, headCircumference, isNew, relatedProducts, shopTitle, sizeForHead } from "@/lib/engine";
+
+describe("storefront", () => {
+  it("reads fitted sizes and converts to head size", () => {
+    expect(fittedSizeValue("7 1/4")).toBe(7.25);
+    expect(fittedSizeValue("7")).toBe(7);
+    expect(fittedSizeValue("One size")).toBeNull();
+    expect(fittedSizeValue("M")).toBeNull();
+    expect(fittedSizeValue("9")).toBeNull();
+    expect(headCircumference("7 1/4")).toEqual({ cm: 57.9, inches: 22.78 });
+    expect(headCircumference("7")).toEqual({ cm: 55.9, inches: 21.99 });
+  });
+
+  it("suggests the size that fits a head measurement", () => {
+    expect(sizeForHead(57.8)).toBe("7 1/4");
+    expect(sizeForHead(57)).toBe("7 1/4");
+    expect(sizeForHead(56.8)).toBe("7 1/8");
+    expect(sizeForHead(70)).toBeNull();
+    expect(sizeForHead(-1)).toBeNull();
+  });
+
+  it("marks caps added in the last 30 days as new", () => {
+    const now = new Date("2026-11-17T12:00:00Z");
+    expect(isNew("2026-11-01T00:00:00Z", now)).toBe(true);
+    expect(isNew("2026-10-01T00:00:00Z", now)).toBe(false);
+    expect(isNew("2026-12-01T00:00:00Z", now)).toBe(false);
+    expect(isNew("garbage", now)).toBe(false);
+  });
+
+  const cap = (id: string, team: string | null, style: string | null, in_stock = true) => ({
+    id, slug: id, name: id, team, style, colour: null, description: null, price_cents: 1, featured: false, images: [],
+    variants: [{ id: `${id}-v`, size: "7", in_stock }], in_stock, created_at: "2026-01-01T00:00:00Z",
+  });
+
+  it("finds related caps by team then style, never itself", () => {
+    const p = cap("p", "A", "Fitted");
+    const all = [p, cap("x", "B", "Snapback"), cap("s", "B", "Fitted"), cap("t", "A", "Snapback"), cap("ts", "A", "Fitted", false), cap("ts2", "A", "Fitted")];
+    expect(relatedProducts(p, all).map((o) => o.id)).toEqual(["ts2", "ts", "t", "s"]);
+  });
+
+  it("labels availability and titles", () => {
+    expect(availabilityLabel({ in_stock: false, variants: [] })).toBe("Sold out");
+    expect(availabilityLabel({ in_stock: true, variants: [{ id: "1", size: "One size", in_stock: true }] })).toBe("In stock");
+    expect(availabilityLabel({ in_stock: true, variants: [{ id: "1", size: "7", in_stock: true }, { id: "2", size: "7 1/4", in_stock: false }] })).toBe("Size 7 only");
+    expect(availabilityLabel({ in_stock: true, variants: [{ id: "1", size: "7", in_stock: true }, { id: "2", size: "7 1/4", in_stock: true }] })).toBe("2 sizes in stock");
+    expect(shopTitle({})).toBe("All caps");
+    expect(shopTitle({ sort: "newest" })).toBe("New arrivals");
+    expect(shopTitle({ team: "A", style: "Fitted" })).toBe("A Fitted");
+    expect(shopTitle({ q: "navy" })).toBe("Search: navy");
+  });
+});

@@ -29,7 +29,7 @@ export function Checkout({ currency, pickup, delivery }: Props) {
   if (cart.items.length === 0) {
     return (
       <div className="empty">
-        <p>Your order is empty.</p>
+        <p>Your bag is empty.</p>
         <Link href="/shop" className="btn">
           Shop caps
         </Link>
@@ -50,9 +50,7 @@ export function Checkout({ currency, pickup, delivery }: Props) {
   return (
     <div className="two-col wide-left">
       <section aria-labelledby="items-h">
-        <h2 id="items-h" className="sr-only">
-          Items
-        </h2>
+        <h2 id="items-h">Your bag</h2>
         <ul className="line-items">
           {cart.items.map((i) => (
             <li key={i.variantId} data-testid="line">

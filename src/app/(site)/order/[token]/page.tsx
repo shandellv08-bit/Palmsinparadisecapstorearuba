@@ -28,7 +28,7 @@ export default async function Confirmation({ params, searchParams }: Props) {
   const label = typeof r.number === "number" ? formatOrderNumber(r.number) : String(r.number);
 
   return (
-    <div className="wrap section" style={{ maxWidth: 720 }}>
+    <div className="wrap page-pad" style={{ maxWidth: 720 }}>
       {placed ? <ClearCart /> : null}
       <h1>Order {label}</h1>
       <p className="success" role="status">

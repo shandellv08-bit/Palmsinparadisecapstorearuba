@@ -1,93 +1,161 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getProducts, getSettings } from "@/lib/catalog";
-import { facets, filterProducts, parseFilter } from "@/lib/engine";
+import { facets, filterProducts, parseFilter, shopTitle, type CatalogFilter, type CatalogProduct } from "@/lib/engine";
 import { ProductCard } from "@/components/ProductCard";
-
-export const metadata: Metadata = { title: "Shop", description: "Every cap in the store, with sizes in stock." };
+import { SortSelect } from "./SortSelect";
+import { MobileFilters } from "./MobileFilters";
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
 
-export default async function Shop({ searchParams }: { searchParams: Params }) {
+export async function generateMetadata({ searchParams }: { searchParams: Params }): Promise<Metadata> {
   const f = parseFilter(await searchParams);
-  const [s, products] = await Promise.all([getSettings(), getProducts()]);
+  return { title: shopTitle(f), description: "Caps in stock in Aruba, with sizes available." };
+}
+
+/** Builds a shop URL from the current filter with one key changed (undefined removes it). */
+function href(f: CatalogFilter, change: Partial<Record<"q" | "team" | "style" | "size" | "stock" | "sort", string | undefined>>) {
+  const cur: Record<string, string | undefined> = { q: f.q, team: f.team, style: f.style, size: f.size, stock: f.inStock ? "1" : undefined, sort: f.sort === "featured" ? undefined : f.sort };
+  const next = { ...cur, ...change };
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(next)) if (v) sp.set(k, v);
+  const s = sp.toString();
+  return s ? `/shop?${s}` : "/shop";
+}
+
+function Facets({ f, products }: { f: CatalogFilter; products: CatalogProduct[] }) {
   const { teams, styles, sizes } = facets(products);
+  // counts reflect the other active filters, so a click never leads to an empty page by surprise
+  const countFor = (key: "team" | "style", value: string) => filterProducts(products, { ...f, [key]: value, sort: "featured" }).length;
+  const list = (key: "team" | "style", values: string[], label: string) =>
+    values.length ? (
+      <details className="facet" open>
+        <summary>{label}</summary>
+        <ul>
+          {values.map((v) => {
+            const on = f[key] === v;
+            return (
+              <li key={v}>
+                <Link href={href(f, { [key]: on ? undefined : v })} aria-current={on ? "true" : undefined} rel="nofollow">
+                  <span className="lbl">
+                    <span className="box" aria-hidden="true" />
+                    {v}
+                  </span>
+                  <span className="c">{countFor(key, v)}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </details>
+    ) : null;
+  return (
+    <>
+      <details className="facet" open>
+        <summary>Availability</summary>
+        <ul>
+          <li>
+            <Link href={href(f, { stock: f.inStock ? undefined : "1" })} aria-current={f.inStock ? "true" : undefined} rel="nofollow">
+              <span className="lbl">
+                <span className="box" aria-hidden="true" />
+                In stock only
+              </span>
+            </Link>
+          </li>
+        </ul>
+      </details>
+      {list("style", styles, "Style")}
+      {sizes.length ? (
+        <details className="facet" open>
+          <summary>Size</summary>
+          <div className="size-chips">
+            {sizes.map((sz) => (
+              <Link key={sz} href={href(f, { size: f.size === sz ? undefined : sz })} aria-current={f.size === sz ? "true" : undefined} rel="nofollow">
+                {sz}
+              </Link>
+            ))}
+          </div>
+          <p className="small" style={{ marginTop: ".6rem" }}>
+            <Link href="/info/size-guide">Size guide</Link>
+          </p>
+        </details>
+      ) : null}
+      {list("team", teams, "Team")}
+    </>
+  );
+}
+
+export default async function Shop({ searchParams }: { searchParams: Params }) {
+  const raw = await searchParams;
+  const f = parseFilter(raw);
+  const [s, products] = await Promise.all([getSettings(), getProducts()]);
   const list = filterProducts(products, f);
-  const filtered = Boolean(f.q || f.team || f.style || f.size || f.inStock);
+  const title = shopTitle(f);
+  const active: [string, string, Partial<Record<string, undefined>>][] = [
+    ...(f.q ? [[`“${f.q}”`, "q", { q: undefined }] as [string, string, Partial<Record<string, undefined>>]] : []),
+    ...(f.style ? [[f.style, "style", { style: undefined }] as [string, string, Partial<Record<string, undefined>>]] : []),
+    ...(f.team ? [[f.team, "team", { team: undefined }] as [string, string, Partial<Record<string, undefined>>]] : []),
+    ...(f.size ? [[`Size ${f.size}`, "size", { size: undefined }] as [string, string, Partial<Record<string, undefined>>]] : []),
+    ...(f.inStock ? [["In stock", "stock", { stock: undefined }] as [string, string, Partial<Record<string, undefined>>]] : []),
+  ];
 
   return (
-    <div className="wrap section">
-      <h1>Shop</h1>
-      {/* Plain GET form: works without JavaScript and every filter has a shareable URL. */}
-      <form className="filters" method="get" role="search" aria-label="Filter caps">
-        <div className="field search">
-          <label htmlFor="q">Search</label>
-          <input id="q" name="q" type="search" defaultValue={f.q} placeholder="Team, style or colour" />
+    <div className="wrap">
+      <div className="collection-head">
+        <p className="crumbs">
+          <Link href="/">Home</Link> / <Link href="/shop">Shop</Link>
+          {title !== "All caps" ? ` / ${title}` : null}
+        </p>
+        <h1>{title}</h1>
+      </div>
+      <div className="collection">
+        <aside className="facets" aria-label="Filters">
+          <Facets f={f} products={products} />
+        </aside>
+        <div>
+          <div className="toolbar">
+            <MobileFilters count={active.length}>
+              <form action="/shop" role="search" className="header-search" style={{ maxWidth: "none", marginBottom: "1rem" }}>
+                <label htmlFor="sq" className="sr-only">
+                  Search caps
+                </label>
+                <input id="sq" name="q" type="search" defaultValue={f.q} placeholder="Search caps" autoFocus={raw.focus === "search"} />
+              </form>
+              <Facets f={f} products={products} />
+            </MobileFilters>
+            <span className="count" aria-live="polite">
+              {list.length} {list.length === 1 ? "cap" : "caps"}
+            </span>
+            <SortSelect value={f.sort ?? "featured"} hidden={{ q: f.q, team: f.team, style: f.style, size: f.size, stock: f.inStock ? "1" : undefined }} />
+          </div>
+          {active.length ? (
+            <div className="chips" aria-label="Active filters">
+              {active.map(([label, key, change]) => (
+                <Link key={key} href={href(f, change)} className="chip" aria-label={`Remove filter ${label}`}>
+                  {label} <span aria-hidden="true">×</span>
+                </Link>
+              ))}
+              <Link href={f.sort && f.sort !== "featured" ? `/shop?sort=${f.sort}` : "/shop"} className="chip clear">
+                Clear all
+              </Link>
+            </div>
+          ) : null}
+          {list.length === 0 ? (
+            <div className="empty">
+              <p>No caps match these filters.</p>
+              <Link href="/shop" className="btn ghost">
+                See all caps
+              </Link>
+            </div>
+          ) : (
+            <div className="pgrid">
+              {list.map((p, i) => (
+                <ProductCard key={p.id} p={p} currency={s.currency} priority={i < 2} />
+              ))}
+            </div>
+          )}
         </div>
-        <div className="field">
-          <label htmlFor="team">Team</label>
-          <select id="team" name="team" defaultValue={f.team ?? ""}>
-            <option value="">All</option>
-            {teams.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="style">Style</label>
-          <select id="style" name="style" defaultValue={f.style ?? ""}>
-            <option value="">All</option>
-            {styles.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="size">Size</label>
-          <select id="size" name="size" defaultValue={f.size ?? ""}>
-            <option value="">All</option>
-            {sizes.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="sort">Sort</label>
-          <select id="sort" name="sort" defaultValue={f.sort}>
-            <option value="featured">Featured</option>
-            <option value="newest">Newest</option>
-            <option value="price-asc">Price, low to high</option>
-            <option value="price-desc">Price, high to low</option>
-          </select>
-        </div>
-        <div className="field">
-          <label className="choice" htmlFor="stock">
-            <input id="stock" name="stock" type="checkbox" value="1" defaultChecked={f.inStock} />
-            In stock only
-          </label>
-          <button className="btn small block" type="submit">
-            Apply
-          </button>
-        </div>
-      </form>
-      <p className="muted" aria-live="polite">
-        {list.length} {list.length === 1 ? "cap" : "caps"}
-        {filtered ? (
-          <>
-            {" · "}
-            <Link href="/shop">Clear filters</Link>
-          </>
-        ) : null}
-      </p>
-      {list.length === 0 ? (
-        <p className="empty">No caps match these filters.</p>
-      ) : (
-        <div className="grid-products">
-          {list.map((p, i) => (
-            <ProductCard key={p.id} p={p} currency={s.currency} priority={i < 2} />
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 }

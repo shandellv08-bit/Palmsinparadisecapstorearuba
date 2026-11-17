@@ -5,7 +5,7 @@ About an hour the first time. You need: a laptop, an email address, and a card f
 ## 1. Create the database (Supabase)
 
 1. Go to supabase.com, sign up, **New project**. Name it `palms-in-paradise`. Pick the region closest to Aruba (US East). Save the database password in a password manager.
-2. When it is ready, open **SQL Editor**. Open each file in `supabase/migrations/` **in order** (0001, 0002, 0003, 0004), paste its whole content, press **Run**. Each must say "Success". Do not skip or reorder.
+2. When it is ready, open **SQL Editor**. Open each file in `supabase/migrations/` **in order** (0001, 0002, 0003, 0004, 0005), paste its whole content, press **Run**. Each must say "Success". Do not skip or reorder.
    (If you have the Supabase CLI: `npx supabase@3.0.0 link` then `npx supabase@3.0.0 db push` does the same.)
 3. **Authentication → Sign In / Providers → Email**: turn **off** "Allow new users to sign up". Staff accounts are only created from the dashboard. Turn **on** "Leaked password protection" if offered.
 4. **Authentication → URL Configuration**: set Site URL to your domain (for example `https://yourdomain.com`).

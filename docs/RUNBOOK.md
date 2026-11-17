@@ -6,6 +6,14 @@
 - **Print pack slip** on an order to tick items off while packing.
 - **Overview** shows low and sold-out sizes. Open the product and add stock with reason *Restock*.
 
+## How the store fills itself in
+
+- **Menus and tiles** (styles, teams, "Shop by team") are built from your products. Fill in **Team** and **Style** on every product and use the same spelling each time, for example always "Fitted", never "fitted" or "59fifty fitted" on one and "Fitted" on another.
+- **New** badges show for 30 days after a product is created.
+- **Featured** products come first and the first featured one with a photo is the big cap on the home banner.
+- **Size guide** appears on caps with fitted sizes (6 7/8 to 8). The measurements are calculated from the size.
+- **Announcement strip**: Store settings, top field. Leave empty to hide it. Only write things that are true.
+
 ## Stock
 
 - First time you enter a size's stock: reason **First count**.

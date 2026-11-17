@@ -8,9 +8,18 @@ test.beforeEach(async () => {
 
 async function addToOrder(page: Page, slug: string, size?: string) {
   await page.goto(`/shop/${slug}`);
-  if (size) await page.getByText(size, { exact: true }).click();
-  await page.getByRole("button", { name: "Add to order" }).click();
-  await expect(page.getByText(/^Added size/)).toBeVisible();
+  if (size) await page.getByRole("radio", { name: size, exact: true }).check();
+  await page.getByRole("button", { name: "Add to bag" }).click();
+  const bag = page.getByRole("dialog", { name: /^Bag/ });
+  await expect(bag).toBeVisible();
+  await expect(bag.getByRole("link", { name: "Checkout" })).toBeVisible();
+  await page.keyboard.press("Escape");
+}
+
+async function openFilters(page: Page) {
+  const btn = page.getByRole("button", { name: /^Filter/ });
+  if (await btn.isVisible()) await btn.click();
+  return btn;
 }
 
 async function fillDetails(page: Page) {
@@ -20,15 +29,16 @@ async function fillDetails(page: Page) {
 
 test("browse and filter the shop", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "E2E Store" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /E2E Store/ })).toBeVisible();
   await page.goto("/shop");
   await expect(page.locator(".card")).toHaveCount(3);
   // sold out sinks to the end and is labelled
   await expect(page.locator(".card").last()).toContainText("Sold out");
 
-  await page.getByLabel("Team").selectOption("Team Two");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await openFilters(page);
+  await page.getByRole("link", { name: /^Team Two/ }).last().click();
   await expect(page).toHaveURL(/team=Team\+Two/);
+  await expect(page.getByRole("heading", { level: 1, name: "Team Two" })).toBeVisible();
   await expect(page.locator(".card")).toHaveCount(1);
   await expect(page.locator(".card")).toContainText("E2E Snapback");
 
@@ -53,7 +63,7 @@ test("order for pickup", async ({ page }) => {
   const [v] = await sql("select stock from public.product_variants where id = $1", [s.navy.variantId]);
   expect(v.stock).toBe(1);
   // basket is emptied after ordering
-  await expect(page.locator(".cart-count")).toHaveText("0");
+  await expect(page.getByRole("button", { name: "Bag, 0 items" })).toBeVisible();
 });
 
 test("order for delivery adds the fee and needs an address", async ({ page }) => {
@@ -76,7 +86,7 @@ test("order for delivery adds the fee and needs an address", async ({ page }) =>
 test("sold-out caps cannot be ordered, even if they sell out during checkout", async ({ page }) => {
   await page.goto(`/shop/${s.soldout.slug}`);
   await expect(page.getByText("Sold out in every size.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Add to order" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Add to bag" })).toHaveCount(0);
 
   await page.goto(`/shop/${s.navy.slug}`);
   await expect(page.getByRole("radio", { name: /7 3\/8/ })).toBeDisabled();
@@ -206,4 +216,37 @@ test("staff can confirm, mark paid and cancel an order with restock", async ({ p
   await expect(page.locator(".timeline")).toContainText("Cancelled and stock returned");
   const [v] = await sql("select stock from public.product_variants where id = $1", [s.navy.variantId]);
   expect(v.stock).toBe(3);
+});
+
+test("header search, team menu, phone menu and size guide", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (isMobile) {
+    await page.getByRole("button", { name: "Menu" }).click();
+    const menu = page.getByRole("dialog", { name: "Menu" });
+    await expect(menu.getByRole("link", { name: /Team Two/ })).toBeVisible();
+    await menu.getByLabel("Search caps").fill("snap");
+    await menu.getByLabel("Search caps").press("Enter");
+  } else {
+    await page.getByText("Teams", { exact: true }).click();
+    await expect(page.getByRole("link", { name: /^Team Two/ }).first()).toBeVisible();
+    await page.keyboard.press("Escape");
+    await page.locator("#hq").fill("snap");
+    await page.locator("#hq").press("Enter");
+  }
+  await expect(page).toHaveURL(/q=snap/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Search: snap/i);
+  await expect(page.locator(".pcard")).toHaveCount(1);
+
+  await page.goto(`/shop/${s.navy.slug}`);
+  // the only size in stock is chosen for the customer
+  await expect(page.getByText("Size: 7 1/4")).toBeVisible();
+  await page.getByRole("button", { name: "Size guide" }).click();
+  const guide = page.getByRole("dialog", { name: "Size guide" });
+  await expect(guide.getByRole("rowheader", { name: "7 1/4" })).toBeVisible();
+  await expect(guide.getByText("57.9")).toBeVisible();
+  await guide.getByRole("button", { name: "Close" }).click();
+  await expect(guide).toBeHidden();
+  await expect(page.getByRole("heading", { name: "More Team One" })).toBeVisible();
+  await page.getByRole("button", { name: "Add to bag" }).click();
+  await expect(page.getByRole("dialog", { name: "Bag (1)" })).toBeVisible();
 });

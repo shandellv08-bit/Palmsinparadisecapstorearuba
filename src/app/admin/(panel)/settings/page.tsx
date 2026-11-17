@@ -34,6 +34,7 @@ export default async function SettingsPage() {
           <legend>Business</legend>
           <F id="business_name" label="Business name" s={s} max={120} />
           <F id="tagline" label="Short line under the name" s={s} max={200} />
+          <F id="announcement" label="Announcement strip at the top of the store" s={s} max={200} hint="Optional. Leave empty to hide it. Example: what is new this week. Only write things that are true." />
           <F id="about" label="About (your story)" s={s} area max={4000} />
           <F id="currency" label="Currency" s={s} max={3} hint="Three letters, for example AWG or USD. All prices are in this currency." />
         </fieldset>
