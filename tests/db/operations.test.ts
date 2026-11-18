@@ -12,6 +12,9 @@ afterAll(async () => {
 beforeEach(async () => {
   await db.query("begin");
   await db.query("update public.settings set pickup_enabled = true, delivery_enabled = false, low_stock_threshold = 2");
+  // start from empty tables whatever is in the database (e.g. the demo); rolled back after each test
+  await db.query(`delete from public.notifications; delete from public.conversations; delete from public.tasks;
+    delete from public.time_entries; delete from public.purchase_orders; delete from public.suppliers; delete from public.expenses`);
 });
 afterEach(async () => {
   await db.query("rollback");
