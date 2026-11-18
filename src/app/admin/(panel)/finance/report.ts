@@ -4,8 +4,12 @@ import { productProfitability, type SaleLine } from "@/lib/engine";
 
 /** Sales lines for non-cancelled orders in a period, with cost where known. Finance roles only (RLS). */
 export async function loadSales(days: number) {
+  return loadSalesSince(new Date(Date.now() - days * 864e5));
+}
+
+export async function loadSalesSince(from: Date) {
   const sb = await supabaseServer();
-  const since = new Date(Date.now() - days * 864e5).toISOString();
+  const since = from.toISOString();
   const { data, error } = await sb
     .from("order_items")
     .select("product_id, product_name, quantity, unit_price_cents, order_item_costs(unit_cost_cents), orders!inner(status, created_at)")

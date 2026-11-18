@@ -198,3 +198,51 @@ export async function sendContact(_prev: ContactState, form: FormData): Promise<
   }
   return { ok: true };
 }
+
+// ---------------------------------------------------------------- live chat
+
+export interface ChatMessage {
+  id: number;
+  sender: "customer" | "staff" | "ai" | "system";
+  body: string;
+  created_at: string;
+  staff_name: string | null;
+}
+
+const chatStart = z.object({
+  name: z.string().trim().min(1, "Enter your name.").max(120),
+  contact: z.string().trim().max(254),
+  body: z.string().trim().min(1, "Write a message.").max(2000),
+  website: z.string().max(0),
+});
+
+export async function startChat(_prev: { token?: string; error?: string }, form: FormData): Promise<{ token?: string; error?: string }> {
+  const p = chatStart.safeParse({ name: form.get("name") ?? "", contact: form.get("contact") ?? "", body: form.get("body") ?? "", website: form.get("website") ?? "" });
+  if (!p.success) {
+    if (p.error.issues.some((i) => i.path[0] === "website")) return { error: "Could not send." };
+    return { error: p.error.issues[0]?.message ?? "Check the form." };
+  }
+  if (getMode() !== "live") return { error: "Chat is not available in demo mode. Use the contact form." };
+  const { data, error } = await supabasePublic().rpc("start_chat", { p_name: p.data.name, p_contact: p.data.contact || null, p_body: p.data.body });
+  if (error || typeof data !== "string") return { error: error?.message === "busy" ? "Chat is busy right now. Try again in a few minutes." : "Could not start the chat. Try again." };
+  return { token: data };
+}
+
+const token = z.string().regex(/^[0-9a-f]{48}$/);
+
+export async function sendChat(t: string, body: string): Promise<{ error?: string }> {
+  const p = z.object({ t: token, body: z.string().trim().min(1).max(2000) }).safeParse({ t, body });
+  if (!p.success) return { error: "Write a message (up to 2000 characters)." };
+  if (getMode() !== "live") return { error: "Chat is not available." };
+  const { error } = await supabasePublic().rpc("chat_send", { p_token: p.data.t, p_body: p.data.body });
+  if (error) return { error: error.message === "slow_down" ? "You are sending messages quickly. Wait a moment." : error.message === "not_found" ? "This chat has ended. Start a new one." : "Not sent. Try again." };
+  return {};
+}
+
+export async function fetchChat(t: string, after: number): Promise<{ status?: "open" | "closed"; messages: ChatMessage[]; gone?: boolean }> {
+  if (!token.safeParse(t).success || getMode() !== "live") return { messages: [], gone: true };
+  const { data, error } = await supabasePublic().rpc("chat_fetch", { p_token: t, p_after: Number.isInteger(after) && after > 0 ? after : 0 });
+  if (error) return { messages: [] };
+  if (!data) return { messages: [], gone: true };
+  return data as { status: "open" | "closed"; messages: ChatMessage[] };
+}

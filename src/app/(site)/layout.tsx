@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CartProvider } from "@/components/cart";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BagDrawer } from "@/components/BagDrawer";
+import { ChatWidget } from "@/components/ChatWidget";
 import { Wordmark } from "@/components/Wordmark";
 import { getProducts, getSettings } from "@/lib/catalog";
 import { getMode } from "@/lib/config";
@@ -35,6 +36,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <SiteHeader name={name} styles={styles} teams={teams} />
         <BagDrawer currency={s.currency} />
         <main id="main">{children}</main>
+        {mode === "live" ? <ChatWidget hours={s.opening_hours} businessName={name} /> : null}
         <footer className="store-footer">
           <div className="wrap top">
             <div>

@@ -5,11 +5,14 @@ export type Role = (typeof ROLES)[number];
 
 export const AREAS = [
   "dashboard",
+  "tasks",
+  "hours",
   "products",
   "inventory",
   "orders",
   "customers",
   "messages",
+  "purchasing",
   "finance",
   "reports",
   "settings",
@@ -19,9 +22,9 @@ export type Area = (typeof AREAS)[number];
 
 const MATRIX: Record<Role, readonly Area[]> = {
   owner: AREAS,
-  manager: ["dashboard", "products", "inventory", "orders", "customers", "messages", "finance", "reports", "settings"],
-  inventory: ["dashboard", "products", "inventory", "orders"],
-  support: ["dashboard", "orders", "customers", "messages"],
+  manager: ["dashboard", "tasks", "hours", "products", "inventory", "orders", "customers", "messages", "purchasing", "finance", "reports", "settings"],
+  inventory: ["dashboard", "tasks", "hours", "products", "inventory", "orders"],
+  support: ["dashboard", "tasks", "hours", "orders", "customers", "messages"],
 };
 
 export const ROLE_LABELS: Record<Role, string> = {
@@ -38,6 +41,11 @@ export function roleCan(role: Role | null | undefined, area: Area): boolean {
 
 export function areasFor(role: Role): readonly Area[] {
   return MATRIX[role];
+}
+
+/** Owner and manager run the business; they see everyone's tasks and hours. */
+export function isLead(role: Role | null | undefined): boolean {
+  return role === "owner" || role === "manager";
 }
 
 export function isRole(value: unknown): value is Role {

@@ -2,6 +2,10 @@
 
 ## Every day
 
+- **Clock in** when you start (top of the dashboard menu) and **clock out** when you leave.
+- **My work** shows what needs you: tasks, chats waiting, orders, deliveries, alerts.
+- **Chat inbox**: answer waiting chats (marked *waiting*). Replying assigns the chat to you. Close it when done; if the customer writes again it reopens. Never ask for card numbers in chat.
+
 - **Orders → Open**: new orders. Call or WhatsApp the customer, then *Mark confirmed* → *Mark ready* → *Mark completed*. Mark paid when you receive the money.
 - **Print pack slip** on an order to tick items off while packing.
 - **Overview** shows low and sold-out sizes. Open the product and add stock with reason *Restock*.
@@ -13,6 +17,24 @@
 - **Featured** products come first and the first featured one with a photo is the big cap on the home banner.
 - **Size guide** appears on caps with fitted sizes (6 7/8 to 8). The measurements are calculated from the size.
 - **Announcement strip**: Store settings, top field. Leave empty to hide it. Only write things that are true.
+
+## Running the team
+
+- **Tasks**: the owner or manager assigns; workers can add tasks for themselves. The person who gave the task is told when it is done.
+- **Hours**: everyone sees their own; owner and manager see everyone and download the month as CSV for pay. Only the owner can correct a shift (logged).
+- **Team → Last 30 days**: hours, tasks done, order updates and chat replies per person.
+
+## Buying stock
+
+1. **Purchasing → New purchase order**, pick the supplier, add caps and sizes with unit cost. Add shipping and duties.
+2. **Mark as ordered** when you have paid or confirmed. The lines lock.
+3. When the box arrives, whoever handles stock opens **Stock & deliveries**, counts, and presses **Receive**. Stock goes up and the movement is logged as PO-number. Inventory staff never see what you paid.
+4. The supplier list compares lead time and average cost per cap.
+
+## Money
+
+- **Expenses**: add every cost that is not a purchase order (rent, ads, fees, wages, shipping). Profit on My work = margin on caps sold − expenses.
+- **Monthly goal**: set on Sales & margin. Private to owner and manager.
 
 ## Stock
 
@@ -27,15 +49,11 @@ Open the order → *Cancel order*. Leave **Put the caps back in stock** ticked u
 
 ## Customer asks to be forgotten (privacy)
 
-Until there is a button for this (roadmap B5), the owner runs this in Supabase **SQL Editor**, replacing the phone number:
+Customers → open the person → **Forget this customer** (owner or manager). Removes name, phone, email, notes and delivery addresses. Orders and totals stay for bookkeeping. Logged in the audit log.
 
-```sql
-update public.customers
-set name = 'Removed', phone = null, phone_key = null, email = null, notes = null, anonymised_at = now()
-where phone_key = regexp_replace('+297 000 0000', '[^0-9]', '', 'g');
-```
+## Same customer twice
 
-Orders stay (needed for your bookkeeping) but no longer identify the person.
+Customers → open one record → **Same person as** → pick the other → **Merge**. Orders move over, the other record is removed.
 
 ## Something is wrong
 

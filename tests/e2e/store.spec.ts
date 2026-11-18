@@ -23,7 +23,7 @@ async function openFilters(page: Page) {
 }
 
 async function fillDetails(page: Page) {
-  await page.getByLabel("Name").fill("E2E Customer");
+  await page.getByLabel("Name", { exact: true }).fill("E2E Customer");
   await page.getByLabel("Phone or WhatsApp").fill("+297 555 0101");
 }
 
@@ -74,7 +74,7 @@ test("order for delivery adds the fee and needs an address", async ({ page }) =>
   await expect(page.locator(".totals")).toContainText("XTS 35.00");
   await page.getByRole("button", { name: "Place order" }).click();
   await expect(page.getByText("Enter a delivery address.")).toBeVisible();
-  await expect(page.getByLabel("Name")).toHaveValue("E2E Customer"); // details are kept after an error
+  await expect(page.getByLabel("Name", { exact: true })).toHaveValue("E2E Customer"); // details are kept after an error
   await page.getByLabel("Delivery address").fill("E2E street 1");
   await page.getByRole("button", { name: "Place order" }).click();
   await expect(page.getByRole("heading", { name: /Order PIP-\d+/ })).toBeVisible();
@@ -108,20 +108,26 @@ test("contact form", async ({ page }) => {
   await expect(page.getByText("not set").first()).toBeVisible(); // phone etc. not entered for this store
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.getByText("Enter your name.")).toBeVisible();
-  await page.getByLabel("Name").fill("E2E Visitor");
-  await page.getByLabel("Phone or email").fill("visitor@example.com");
-  await page.getByLabel("Message").fill("Do you have 7 1/2?");
+  await page.getByLabel("Name", { exact: true }).fill("E2E Visitor");
+  await page.getByLabel("Phone or email", { exact: true }).fill("visitor@example.com");
+  await page.getByLabel("Message", { exact: true }).fill("Do you have 7 1/2?");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.getByText("Message sent.")).toBeVisible();
   expect(await sql("select name from public.contact_messages")).toEqual([{ name: "E2E Visitor" }]);
 });
+
+async function signOut(page: Page) {
+  const toggle = page.getByRole("button", { name: /^Menu/ });
+  if (await toggle.isVisible()) await toggle.click();
+  await page.getByRole("button", { name: "Sign out" }).click();
+}
 
 async function login(page: Page, email: string, password = PASSWORD) {
   await page.goto("/admin/login");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  if (password === PASSWORD) await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+  if (password === PASSWORD) await expect(page.getByRole("heading", { level: 1, name: /^Hi / })).toBeVisible();
 }
 
 test("admin login and role restrictions", async ({ page }) => {
@@ -131,19 +137,23 @@ test("admin login and role restrictions", async ({ page }) => {
   await expect(page.getByText("Email or password is not correct.")).toBeVisible();
 
   await login(page, USERS.support);
-  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /^Hi / })).toBeVisible();
+  const toggle = page.getByRole("button", { name: /^Menu/ });
+  if (await toggle.isVisible()) await toggle.click();
   const nav = page.getByRole("navigation", { name: "Dashboard" });
   await expect(nav.getByRole("link", { name: "Orders" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Sales & margin" })).toHaveCount(0);
   await expect(nav.getByRole("link", { name: "Team" })).toHaveCount(0);
-  for (const path of ["/admin/finance", "/admin/team", "/admin/settings", "/admin/products"]) {
+  await expect(nav.getByRole("link", { name: "Expenses" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Purchasing" })).toHaveCount(0);
+  for (const path of ["/admin/finance", "/admin/team", "/admin/settings", "/admin/products", "/admin/expenses", "/admin/purchasing"]) {
     await page.goto(path);
     await expect(page, path).toHaveURL(/\/admin\/no-access/);
   }
   const csv = await page.request.get("/admin/finance/export");
   expect(csv.status()).toBe(403);
 
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await signOut(page);
   await expect(page).toHaveURL(/\/admin\/login/);
   await login(page, USERS.owner);
   await page.goto("/admin/finance");
@@ -155,7 +165,7 @@ test("admin login and role restrictions", async ({ page }) => {
 test("owner creates a product with a photo, stock and a cost, then it is on the store", async ({ page }) => {
   await login(page, USERS.owner);
   await page.goto("/admin/products/new");
-  await page.getByLabel("Name").fill("E2E New Cap");
+  await page.getByLabel("Name", { exact: true }).fill("E2E New Cap");
   await page.getByLabel("Team").fill("Team Three");
   await page.getByLabel("Selling price").fill("52.50");
   await page.getByLabel("Your cost per cap").fill("30");

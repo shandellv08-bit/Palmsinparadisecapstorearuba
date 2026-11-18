@@ -3,6 +3,8 @@ import { requireStaff } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
 import { formatMoney } from "@/lib/engine";
 import { loadSales } from "./report";
+import { ActionForm } from "@/components/admin/ActionForm";
+import { setGoal } from "../../ops";
 
 export const metadata = { title: "Sales & margin" };
 
@@ -13,11 +15,15 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
   const d = Number((await searchParams).days);
   const days = PERIODS.includes(d) ? d : 30;
   const sb = await supabaseServer();
-  const [{ rows, totals }, { data: s }, { data: audit }] = await Promise.all([
+  const since = new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
+  const [{ rows, totals }, { data: s }, { data: audit }, { data: goal }, { data: exp }] = await Promise.all([
     loadSales(days),
     sb.from("settings").select("currency").eq("id", 1).single(),
     sb.from("audit_log").select("id, action, entity, created_at, actor").order("id", { ascending: false }).limit(15),
+    sb.from("goals").select("monthly_sales_target_cents").eq("id", 1).maybeSingle(),
+    sb.from("expenses").select("amount_cents").gte("spent_on", since),
   ]);
+  const expenses = ((exp ?? []) as { amount_cents: number }[]).reduce((n, e) => n + e.amount_cents, 0);
   const cur = s?.currency ?? null;
   const pct = (p: number | null) => (p === null ? "cost not set" : `${p}%`);
   return (
@@ -47,7 +53,23 @@ export default async function Finance({ searchParams }: { searchParams: Promise<
           Margin (where cost is known)<b>{totals.marginPct === null ? "—" : formatMoney(totals.marginCents, cur)}</b>
           <span className="small muted">{pct(totals.marginPct)}</span>
         </div>
+        <div className="stat">
+          Expenses<b>{formatMoney(expenses, cur)}</b>
+          <Link className="small" href="/admin/expenses">Expenses</Link>
+        </div>
+        <div className="stat">
+          Profit<b>{formatMoney(totals.marginCents - expenses, cur)}</b>
+          <span className="small muted">margin − expenses</span>
+        </div>
       </div>
+      <ActionForm action={setGoal} className="panel row" >
+        <div className="field" style={{ margin: 0 }} id="goal">
+          <label htmlFor="target">Monthly sales goal</label>
+          <input id="target" name="target" type="text" inputMode="decimal" defaultValue={goal?.monthly_sales_target_cents != null ? (goal.monthly_sales_target_cents / 100).toFixed(2) : ""} style={{ width: "10rem" }} />
+        </div>
+        <button className="btn small" style={{ alignSelf: "flex-end" }}>Save goal</button>
+        <p className="small muted" style={{ margin: 0, alignSelf: "center", flex: 1 }}>Private: only owner and manager see it. Progress shows on My work.</p>
+      </ActionForm>
       {totals.unitsWithoutCost > 0 ? (
         <p className="notice">{totals.unitsWithoutCost} caps sold have no cost recorded, so they are left out of the margin. Add costs on each product.</p>
       ) : null}

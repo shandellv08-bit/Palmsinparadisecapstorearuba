@@ -323,3 +323,55 @@ describe("storefront", () => {
     expect(shopTitle({ q: "navy" })).toBe("Search: navy");
   });
 });
+
+import { arubaDayStart, arubaMonthStart, arubaWeekStart, formatHours, goalProgress, hoursWorked, isLead, sumByCategory } from "@/lib/engine";
+
+describe("business numbers", () => {
+  it("uses Aruba time for day, week and month boundaries", () => {
+    // 02:30 UTC on 1 Dec is still 30 Nov 22:30 in Aruba
+    const now = new Date("2026-12-01T02:30:00Z");
+    expect(arubaDayStart(now).toISOString()).toBe("2026-11-30T04:00:00.000Z");
+    expect(arubaMonthStart(now).toISOString()).toBe("2026-11-01T04:00:00.000Z");
+    expect(arubaWeekStart(now).toISOString()).toBe("2026-11-30T04:00:00.000Z"); // Monday 30 Nov
+    expect(arubaWeekStart(new Date("2026-11-18T15:00:00Z")).toISOString()).toBe("2026-11-16T04:00:00.000Z");
+  });
+
+  it("adds up hours inside a window, counting open shifts to now", () => {
+    const from = new Date("2026-11-16T04:00:00Z");
+    const to = new Date("2026-11-23T04:00:00Z");
+    const now = new Date("2026-11-18T16:00:00Z");
+    const h = hoursWorked(
+      [
+        { user_id: "a", started_at: "2026-11-16T12:00:00Z", ended_at: "2026-11-16T20:30:00Z" },
+        { user_id: "a", started_at: "2026-11-15T23:00:00Z", ended_at: "2026-11-16T06:00:00Z" }, // only 2h inside the week
+        { user_id: "b", started_at: "2026-11-18T13:00:00Z", ended_at: null },
+        { user_id: "c", started_at: "2026-11-10T13:00:00Z", ended_at: "2026-11-10T14:00:00Z" },
+      ],
+      from, to, now,
+    );
+    expect(h.get("a")).toBe(10.5);
+    expect(h.get("b")).toBe(3);
+    expect(h.has("c")).toBe(false);
+    expect(formatHours(10.5)).toBe("10h 30m");
+    expect(formatHours(0.01)).toBe("0h 01m");
+  });
+
+  it("tracks the monthly goal against how much of the month has passed", () => {
+    const mid = new Date("2026-11-16T04:00:00Z"); // exactly half of November (30 days)
+    const g = goalProgress(250000, 400000, mid);
+    expect(g.expectedPct).toBe(50);
+    expect(g.pct).toBe(62.5);
+    expect(g.projectedCents).toBe(500000);
+    expect(g.onTrack).toBe(true);
+    expect(goalProgress(100000, 400000, mid).onTrack).toBe(false);
+    expect(goalProgress(100000, null, mid)).toMatchObject({ pct: null, onTrack: null });
+  });
+
+  it("totals expenses by category and knows who leads", () => {
+    expect(sumByCategory([{ category: "rent", amount_cents: 100 }, { category: "rent", amount_cents: 50 }, { category: "fees", amount_cents: 7 }])).toMatchObject({ rent: 150, fees: 7, stock: 0 });
+    expect(isLead("owner")).toBe(true);
+    expect(isLead("manager")).toBe(true);
+    expect(isLead("support")).toBe(false);
+    expect(isLead(null)).toBe(false);
+  });
+});

@@ -20,7 +20,7 @@ function localEnv(): Record<string, string> {
 }
 
 export const PASSWORD = "e2e-password-not-secret";
-export const USERS = { owner: "owner@e2e.local", support: "support@e2e.local" };
+export const USERS = { owner: "owner@e2e.local", support: "support@e2e.local", inventory: "inventory@e2e.local" };
 
 export interface Seeded {
   navy: { slug: string; size: string; variantId: string };
@@ -41,11 +41,12 @@ export async function seed(): Promise<Seeded> {
   try {
     await db.query("begin");
     await db.query(
-      "truncate public.orders, public.customers, public.products, public.contact_messages, public.inventory_movements, public.audit_log cascade",
+      "truncate public.orders, public.customers, public.products, public.contact_messages, public.inventory_movements, public.audit_log, public.conversations, public.tasks, public.time_entries, public.purchase_orders, public.suppliers, public.expenses, public.notifications cascade",
     );
     await db.query(`update public.settings set business_name = 'E2E Store', currency = 'XTS', pickup_enabled = true,
       pickup_instructions = 'E2E pickup instructions', delivery_enabled = true, delivery_fee_cents = 500,
       free_delivery_threshold_cents = null, delivery_areas = 'E2E area', returns_policy = null, privacy_policy = null`);
+    await db.query("update public.goals set monthly_sales_target_cents = null");
     await db.query("select set_config('pip.stock_write', 'on', true)");
     const product = async (slug: string, name: string, team: string, style: string, price: number, featured: boolean, sizes: [string, number][]) => {
       const { rows } = await db.query(

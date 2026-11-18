@@ -217,3 +217,44 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 @media (max-width: 560px) { .hide-sm { display: none; } .nav { gap: .9rem; } }
 .line-items .crown .placeholder { font-size: 0; }
+
+/* ---------------------------------------------------------- admin additions */
+.admin-nav .bell { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--salt); padding: 0; }
+.admin-nav .bell:hover { background: rgba(255,255,255,.1); }
+.admin-nav .bell svg { width: 22px; height: 22px; }
+.admin-nav .bell .dot { position: absolute; top: 2px; right: 0; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--papaya); color: var(--sea-deep); font-size: .72rem; font-weight: 800; display: grid; place-items: center; }
+.admin-nav .clock { margin: .75rem 0; padding: .6rem .75rem; border-radius: 10px; background: rgba(255,255,255,.07); }
+.admin-nav .clock fieldset { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.admin-nav .nav-group { margin-top: .75rem; }
+.admin-nav .nav-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; opacity: .7; margin: 0 0 .15rem .6rem; }
+.admin-nav ul { margin: 0 0 .25rem; }
+.admin-nav a { display: flex; justify-content: space-between; align-items: center; }
+.admin-nav .pill { background: var(--papaya); color: var(--sea-deep); border-radius: 999px; font-size: .72rem; font-weight: 800; padding: .05rem .5rem; }
+.progress { height: 12px; border-radius: 999px; background: var(--sand); overflow: hidden; position: relative; }
+.progress > span { display: block; height: 100%; background: var(--sea); border-radius: 999px; }
+.progress > i { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--papaya-ink); }
+.work-grid { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 1000px) { .work-grid { grid-template-columns: 1fr 1fr; } }
+.work-grid .panel h2 { font-size: 1.2rem; display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+.work-grid .panel h2 a { font-size: .85rem; font-family: var(--font-text); font-weight: 600; }
+.list-plain { list-style: none; padding: 0; margin: 0; }
+.list-plain li { padding: .55rem 0; border-bottom: 1px solid var(--sand); display: flex; justify-content: space-between; gap: .75rem; align-items: baseline; }
+.list-plain li:last-child { border-bottom: 0; }
+.board { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .board { grid-template-columns: repeat(3, 1fr); } }
+.board .col { background: var(--sand); border-radius: var(--radius); padding: .75rem; min-height: 120px; }
+.board .col h2 { font-size: 1rem; margin: .25rem .25rem .75rem; }
+.task-card { display: block; background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: .7rem .8rem; margin-bottom: .6rem; text-decoration: none; color: var(--sea-deep); }
+.task-card:hover { border-color: var(--sea); color: var(--sea-deep); }
+.task-card .meta { font-size: .8rem; color: var(--muted); margin-top: .25rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+.task-card.overdue { border-left: 4px solid var(--bad); }
+.thread { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-direction: column; gap: .6rem; }
+.thread li { max-width: 80%; padding: .6rem .85rem; border-radius: 14px; background: var(--white); border: 1px solid var(--line); white-space: pre-line; }
+.thread li.customer { align-self: flex-start; border-bottom-left-radius: 4px; }
+.thread li.staff, .thread li.ai { align-self: flex-end; background: var(--sea); color: var(--white); border-color: var(--sea); border-bottom-right-radius: 4px; }
+.thread li.system { align-self: center; background: transparent; border: 0; color: var(--muted); font-size: .85rem; }
+.thread .when { display: block; font-size: .72rem; opacity: .75; margin-top: .2rem; }
+.unread-row td:first-child { box-shadow: inset 3px 0 0 var(--papaya-ink); }
+.admin-nav .menu-toggle { --fg: var(--salt); box-shadow: inset 0 0 0 2px var(--salt); width: 100%; margin-bottom: .5rem; }
+@media (min-width: 900px) { .admin-nav .menu-toggle { display: none; } }
+@media (max-width: 899px) { .admin-nav nav:not(.open) { display: none; } .admin-nav { padding-bottom: .5rem; } .admin-nav > form:last-child { display: none; } .admin-nav:has(nav.open) > form:last-child { display: block; } }

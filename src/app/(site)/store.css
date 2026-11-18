@@ -259,3 +259,18 @@ dialog.modal .sheet-body { max-height: 70dvh; }
 .store .page-pad { padding-block: 1.5rem 3rem; }
 @media print { .store-header, .store-footer, .announce { display: none !important; } }
 .buybox .sticky-buy .btn { width: auto; flex: none; min-height: 46px; font-size: .9rem; }
+
+/* ---------------------------------------------------------- chat */
+.chat-launch { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 24; display: inline-flex; align-items: center; gap: .5rem; min-height: 50px; padding: 0 1.1rem; border: 0; border-radius: 999px 999px 999px 8px; background: var(--sea-deep); color: var(--salt); font: 800 .9rem var(--font-text); box-shadow: 0 10px 24px -10px rgba(6,47,55,.6); cursor: pointer; }
+.chat-launch svg { width: 20px; height: 20px; }
+.chat-launch .count { background: var(--papaya); color: var(--sea-deep); border-radius: 999px; min-width: 22px; height: 22px; display: grid; place-items: center; font-size: .75rem; }
+.chat-launch:hover { background: var(--sea); }
+@media (max-width: 899px) { body:has(.sticky-buy.show) .chat-launch { bottom: 84px; } .chat-launch span:not(.count) { display: none; } .chat-launch { padding: 0 .95rem; } }
+.store .thread { list-style: none; padding: 0; margin: 1rem 0; display: flex; flex-direction: column; gap: .5rem; }
+.store .thread li { max-width: 85%; padding: .55rem .8rem; border-radius: 14px; background: var(--white); border: 1px solid var(--line); white-space: pre-line; font-size: .95rem; }
+.store .thread li.mine { align-self: flex-end; background: var(--sea); color: var(--white); border-color: var(--sea); border-bottom-right-radius: 4px; }
+.store .thread li.staff, .store .thread li.ai { align-self: flex-start; border-bottom-left-radius: 4px; }
+.store .thread li.system { align-self: center; border: 0; background: none; color: var(--muted); font-size: .82rem; }
+.store .thread .when { display: block; font-size: .7rem; opacity: .75; margin-top: .15rem; }
+.chat-send { display: flex; gap: .5rem; align-items: flex-end; margin-bottom: .5rem; }
+.chat-send textarea { min-height: 52px; }

@@ -5,7 +5,7 @@ About an hour the first time. You need: a laptop, an email address, and a card f
 ## 1. Create the database (Supabase)
 
 1. Go to supabase.com, sign up, **New project**. Name it `palms-in-paradise`. Pick the region closest to Aruba (US East). Save the database password in a password manager.
-2. When it is ready, open **SQL Editor**. Open each file in `supabase/migrations/` **in order** (0001, 0002, 0003, 0004, 0005), paste its whole content, press **Run**. Each must say "Success". Do not skip or reorder.
+2. When it is ready, open **SQL Editor**. Open each file in `supabase/migrations/` **in order** (0001 to 0006), paste its whole content, press **Run**. Each must say "Success". Do not skip or reorder.
    (If you have the Supabase CLI: `npx supabase@3.0.0 link` then `npx supabase@3.0.0 db push` does the same.)
 3. **Authentication → Sign In / Providers → Email**: turn **off** "Allow new users to sign up". Staff accounts are only created from the dashboard. Turn **on** "Leaked password protection" if offered.
 4. **Authentication → URL Configuration**: set Site URL to your domain (for example `https://yourdomain.com`).
@@ -59,7 +59,9 @@ Sign in at `/admin`. The overview shows **Before you go live** until these are d
 - [ ] Place a real test order on your phone (pickup), check it appears in **Orders**, mark it ready, completed, paid
 - [ ] Place a delivery test order if you deliver
 - [ ] Cancel one test order with "put back in stock" ticked and check stock went back up
-- [ ] Send a message from the contact page and check it appears in **Messages**
+- [ ] Send a message from the contact page and check it appears in **Contact form**
+- [ ] Start a chat from your phone, answer it from **Chat inbox** on the laptop, check the reply arrives on the phone
+- [ ] Set the monthly sales goal (Sales & margin) and add one real expense
 - [ ] If emails are set up: check the new-order email arrived
 - [ ] Add a customer-service team member, sign in as them on another browser, confirm they cannot open Sales or Team
 - [ ] Delete the test orders' effect: cancel them with restock (orders stay in history, which is normal)

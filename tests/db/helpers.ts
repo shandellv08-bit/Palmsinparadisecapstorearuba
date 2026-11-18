@@ -52,6 +52,7 @@ export async function expectFail(db: Client, sql: string, params: unknown[] = []
 
 export async function createUser(db: Client, email: string): Promise<string> {
   const id = randomUUID();
+  await actAs(db, { role: "postgres" }); // fixtures are always created as the database owner
   await db.query("insert into auth.users (id, email) values ($1, $2)", [id, email]);
   return id;
 }
@@ -73,6 +74,7 @@ export async function createProduct(
   opts: { price: number; cost?: number; status?: "draft" | "active" | "archived"; stock: Record<string, number> },
 ) {
   const slug = `test-${randomUUID().slice(0, 8)}`;
+  await actAs(db, { role: "postgres" });
   const { rows } = await db.query(
     "insert into public.products (slug, name, price_cents, status) values ($1, $2, $3, $4) returning id",
     [slug, `Test cap ${slug}`, opts.price, opts.status ?? "active"],

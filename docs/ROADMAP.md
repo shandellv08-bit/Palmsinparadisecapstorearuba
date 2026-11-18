@@ -17,15 +17,28 @@
 - Size guide page. Product pages are pre-built at deploy time.
 - Tests: 30 engine, 27 database, 9 browser flows on desktop and phone.
 
+## Done (18 Nov 2026): running the company
+
+- Customer service line: chat on every store page, staff inbox with waiting/assigned/closed, takeover on reply, flood limits, no staff ids or costs ever exposed.
+- My work home per role, business pulse for owner/manager (sales today/month, goal progress with straight-line projection, profit after expenses, team on shift).
+- Notification bell: new order, sold out, low stock, chat, task assigned/done/comment, de-duplicated.
+- Tasks: board, priorities, due dates, comments, history; leads assign to anyone, workers to themselves.
+- Hours: clock in/out, weekly and monthly totals, owner corrections (audited), CSV for pay.
+- Purchasing: suppliers with lead time and cost comparison, purchase orders draft → ordered → received, receiving increments stock with a logged movement; inventory staff receive without seeing costs.
+- Expenses by category and month; private monthly sales goal.
+- Customers: profile, history, sizes bought, notes, blocked status, merge duplicates, privacy removal.
+- Team activity for the last 30 days.
+- Tests: 34 engine, 39 database, 15 browser flows on desktop and phone.
+
 ## Next, in order
 
 1. **Go live together** (DEPLOY.md), real test order on your phone.
 2. Payments: needs your answer on which provider works for you in Aruba (see questions).
-3. Customer detail page, merge duplicates, anonymise button.
-4. Notifications bell (new order, sold out, low stock, new message).
-5. Turnstile bot check on checkout, contact and login. Sentry error reporting. MFA for owner/manager.
-6. Purchase orders and supplier comparison; CSV inventory import with preview.
-7. AI business advisor and AI customer-service chat (needs an Anthropic API key).
+3. Turnstile bot check on checkout, contact and login. Sentry error reporting. MFA for owner/manager.
+4. CSV inventory import with preview.
+5. AI business advisor, and an AI first reply in the chat that hands over to staff (needs an Anthropic API key).
+6. Discount codes, gift cards and a loyalty stamp card.
+7. Email or WhatsApp alerts to staff phones for new orders and chats.
 8. Papiamento and Dutch translations (your wording review needed).
 9. Automated encrypted backups and a restore drill.
 10. Lighthouse and axe audits with real photos.

@@ -28,6 +28,7 @@ export default async function Contact({ searchParams }: { searchParams: Promise<
       </div>
       <div className="panel">
         <h2>Send a message</h2>
+        <p className="small muted">You can also chat with us using the chat button at the bottom of the page.</p>
         <ContactForm about={about?.slice(0, 120)} />
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { requireStaff } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
-import { areasFor, ROLE_LABELS, ROLES } from "@/lib/engine";
+import { areasFor, formatHours, hoursWorked, ROLE_LABELS, ROLES, type TimeEntry } from "@/lib/engine";
 import { ActionForm } from "@/components/admin/ActionForm";
 import { addTeamMember, updateTeamMember } from "../../manage";
 
@@ -11,6 +11,23 @@ export default async function Team() {
   const sb = await supabaseServer();
   const { data } = await sb.from("staff").select("user_id, full_name, email, role, active").order("created_at");
   const rows = (data ?? []) as { user_id: string; full_name: string; email: string; role: (typeof ROLES)[number]; active: boolean }[];
+  // last 30 days of activity per person
+  const since = new Date(Date.now() - 30 * 864e5);
+  const [{ data: done }, { data: events }, { data: chats }, { data: shifts }] = await Promise.all([
+    sb.from("tasks").select("assigned_to").eq("status", "done").gte("done_at", since.toISOString()),
+    sb.from("order_events").select("actor").not("actor", "is", null).gte("created_at", since.toISOString()),
+    sb.from("chat_messages").select("staff_id").eq("sender", "staff").gte("created_at", since.toISOString()),
+    sb.from("time_entries").select("user_id, started_at, ended_at").gte("started_at", new Date(since.getTime() - 864e5).toISOString()),
+  ]);
+  const tally = (list: Record<string, string | null>[] | null, key: string) => {
+    const m = new Map<string, number>();
+    for (const r of list ?? []) if (r[key]) m.set(r[key]!, (m.get(r[key]!) ?? 0) + 1);
+    return m;
+  };
+  const tasksDone = tally(done as Record<string, string | null>[], "assigned_to");
+  const orderActions = tally(events as Record<string, string | null>[], "actor");
+  const chatReplies = tally(chats as Record<string, string | null>[], "staff_id");
+  const hours = hoursWorked((shifts ?? []) as TimeEntry[], since, new Date(Date.now() + 864e5), new Date());
   return (
     <>
       <h1>Team</h1>
@@ -54,6 +71,26 @@ export default async function Team() {
           </tbody>
         </table>
       </div>
+
+      <section className="section">
+        <h2>Last 30 days</h2>
+        <div className="table-scroll">
+          <table>
+            <thead><tr><th>Person</th><th className="num">Hours</th><th className="num">Tasks done</th><th className="num">Order updates</th><th className="num">Chat replies</th></tr></thead>
+            <tbody>
+              {rows.filter((t) => t.active).map((t) => (
+                <tr key={t.user_id}>
+                  <td>{t.full_name}</td>
+                  <td className="num">{formatHours(hours.get(t.user_id) ?? 0)}</td>
+                  <td className="num">{tasksDone.get(t.user_id) ?? 0}</td>
+                  <td className="num">{orderActions.get(t.user_id) ?? 0}</td>
+                  <td className="num">{chatReplies.get(t.user_id) ?? 0}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="section">
         <h2>Add a team member</h2>
