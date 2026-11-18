@@ -22,7 +22,7 @@ export const PHOTO_BUCKET = "product-photos";
 
 export function photoUrl(base: string, size: 600 | 1600): string {
   if (/^(https?:|\/)/.test(base)) return base; // demo images and absolute URLs
-  const root = env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const root = process.env.NEXT_PUBLIC_STORAGE_PROXY === "1" ? "" : (env.NEXT_PUBLIC_SUPABASE_URL ?? "");
   return `${root}/storage/v1/object/public/${PHOTO_BUCKET}/${base}-${size}.webp`;
 }
 

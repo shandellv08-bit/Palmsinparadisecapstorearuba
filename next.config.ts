@@ -11,6 +11,13 @@ const securityHeaders = [
 const config: NextConfig = {
   poweredByHeader: false,
   experimental: { serverActions: { bodySizeLimit: "1mb" } },
+  // Optional: serve Supabase Storage through this site (used for previews where
+  // the browser cannot reach the database host directly). Off unless set.
+  async rewrites() {
+    const target = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (process.env.NEXT_PUBLIC_STORAGE_PROXY !== "1" || !target) return [];
+    return [{ source: "/storage/v1/:path*", destination: `${target}/storage/v1/:path*` }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

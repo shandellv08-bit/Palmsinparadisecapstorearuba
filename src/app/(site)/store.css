@@ -274,3 +274,12 @@ dialog.modal .sheet-body { max-height: 70dvh; }
 .store .thread .when { display: block; font-size: .7rem; opacity: .75; margin-top: .15rem; }
 .chat-send { display: flex; gap: .5rem; align-items: flex-end; margin-bottom: .5rem; }
 .chat-send textarea { min-height: 52px; }
+.store-header .bar > .row { flex-wrap: nowrap; min-width: 0; }
+@media (max-width: 480px) {
+  .wordmark { gap: .4rem; }
+  .wordmark svg { width: 28px; height: 28px; }
+  .wordmark .name { font-size: 1.02rem; white-space: nowrap; }
+  .wordmark .place { font-size: .55rem; letter-spacing: .26em; }
+  .store-header .bar { gap: .25rem; }
+  .icon-btn { width: 40px; height: 40px; }
+}

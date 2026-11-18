@@ -49,7 +49,8 @@ export function PhotoUploader({ productId, supabaseUrl, anonKey, remaining }: { 
       setStatus("Preparing…");
       const res = await requestUploadUrls(productId, files.length);
       if ("error" in res && res.error) throw new Error(res.error);
-      const sb = supabaseBrowser(supabaseUrl, anonKey);
+      const base = process.env.NEXT_PUBLIC_STORAGE_PROXY === "1" ? window.location.origin : supabaseUrl;
+      const sb = supabaseBrowser(base, anonKey);
       const bases: string[] = [];
       for (const [i, file] of files.entries()) {
         setStatus(`Uploading photo ${i + 1} of ${files.length}…`);

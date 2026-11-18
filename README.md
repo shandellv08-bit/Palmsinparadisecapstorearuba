@@ -29,6 +29,17 @@ cp .env.example .env.local   # paste the keys in
 npm run dev
 ```
 
+## Try a realistic demo
+
+With the local database running (`npm run db:local`) and `.env.local` filled in:
+
+```bash
+npm run build && npx next start -p 3000
+node scripts/seed-demo.mjs
+```
+
+This wipes the **local** database and fills it with a labelled demo business: 11 caps with drawn images, a month of orders, customers, chats, tasks, shifts, suppliers, a delivery on its way, expenses and a goal. Logins (password `demo-password-123`): `shan@demo.local` (owner), `maria@demo.local` (manager), `jay@demo.local` (inventory), `kim@demo.local` (customer service). It refuses to run against anything but localhost. Never run it on the real project.
+
 ## How it fits together
 
 | Where | What |
