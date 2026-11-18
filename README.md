@@ -38,7 +38,7 @@ npm run build && npx next start -p 3000
 node scripts/seed-demo.mjs
 ```
 
-This wipes the **local** database and fills it with a labelled demo business: 11 caps with drawn images, a month of orders, customers, chats, tasks, shifts, suppliers, a delivery on its way, expenses and a goal. Logins (password `demo-password-123`): `shan@demo.local` (owner), `maria@demo.local` (manager), `jay@demo.local` (inventory), `kim@demo.local` (customer service). It refuses to run against anything but localhost. Never run it on the real project.
+This wipes the **local** database and fills it with a labelled demo business: 11 real cap models (Yankees, Mets, Dodgers, Red Sox, Braves, Cubs, Marlins) with demo prices and stock, a month of orders, customers, chats, tasks, shifts, suppliers, a delivery on its way, expenses and a goal. Photos: put real photos in `demo-photos/` named after the cap's web address, e.g. `new-york-yankees-59fifty-fitted-black.jpg` (and `…-2.jpg` for a second view), then rerun the script. Caps without a photo show "Photo not set". The folder is not committed. Logins (password `demo-password-123`): `shan@demo.local` (owner), `maria@demo.local` (manager), `jay@demo.local` (inventory), `kim@demo.local` (customer service). It refuses to run against anything but localhost. Never run it on the real project.
 
 ## How it fits together
 

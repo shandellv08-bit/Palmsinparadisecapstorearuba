@@ -45,7 +45,9 @@ export async function seed(): Promise<Seeded> {
     );
     await db.query(`update public.settings set business_name = 'E2E Store', currency = 'XTS', pickup_enabled = true,
       pickup_instructions = 'E2E pickup instructions', delivery_enabled = true, delivery_fee_cents = 500,
-      free_delivery_threshold_cents = null, delivery_areas = 'E2E area', returns_policy = null, privacy_policy = null`);
+      free_delivery_threshold_cents = null, delivery_areas = 'E2E area', returns_policy = null, privacy_policy = null,
+      terms = null, about = null, tagline = null, announcement = null, phone = null, whatsapp = null, email = null,
+      instagram = null, address = null, opening_hours = null, low_stock_threshold = 2`);
     await db.query("update public.goals set monthly_sales_target_cents = null");
     await db.query("select set_config('pip.stock_write', 'on', true)");
     const product = async (slug: string, name: string, team: string, style: string, price: number, featured: boolean, sizes: [string, number][]) => {

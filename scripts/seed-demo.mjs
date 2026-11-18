@@ -12,7 +12,7 @@
 import pg from "pg";
 import { createClient } from "@supabase/supabase-js";
 import { chromium } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const env = Object.fromEntries(
   readFileSync(".env.local", "utf8").split("\n").filter((l) => l.includes("=")).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]),
@@ -99,68 +99,54 @@ async function as(who, sql, params = []) {
 
 // ---------------------------------------------------------------- caps
 const FITTED = ["6 7/8", "7", "7 1/8", "7 1/4", "7 3/8", "7 1/2", "7 5/8", "7 3/4"];
+// Real caps of the kind the store sells. Prices, costs and stock are demo values.
+// Photos: put real photos in demo-photos/ named <slug>.jpg (and <slug>-2.jpg for a
+// second view). Caps without a photo show "Photo not set", never a drawing.
 const caps = [
-  { name: "New York 59FIFTY Fitted, Navy", team: "New York", style: "59FIFTY Fitted", colour: "Navy", crown: "#1b2a4a", brim: "#16223d", ink: "#ffffff", mark: "NY", price: 7500, cost: 3200, sizes: FITTED, featured: true, ageDays: 6 },
-  { name: "Los Angeles 59FIFTY Fitted, Royal", team: "Los Angeles", style: "59FIFTY Fitted", colour: "Royal blue", crown: "#1d4fa3", brim: "#173f84", ink: "#ffffff", mark: "LA", price: 7500, cost: 3200, sizes: FITTED, featured: true, ageDays: 12 },
-  { name: "Chicago 59FIFTY Fitted, Black", team: "Chicago", style: "59FIFTY Fitted", colour: "Black", crown: "#1c1c1e", brim: "#111113", ink: "#d1293d", mark: "C", price: 7500, cost: 3300, sizes: FITTED.slice(1, 7), featured: false, ageDays: 40 },
-  { name: "Boston 59FIFTY Fitted, Navy", team: "Boston", style: "59FIFTY Fitted", colour: "Navy and red", crown: "#14213d", brim: "#14213d", ink: "#c8102e", mark: "B", price: 7500, cost: 3200, sizes: FITTED.slice(2, 7), featured: false, ageDays: 55 },
-  { name: "San Francisco 59FIFTY Fitted, Black", team: "San Francisco", style: "59FIFTY Fitted", colour: "Black and orange", crown: "#161616", brim: "#f05a28", ink: "#f05a28", mark: "SF", price: 8000, cost: 3500, sizes: FITTED.slice(2, 6), featured: true, ageDays: 3 },
-  { name: "Los Angeles 59FIFTY Fitted, All Black", team: "Los Angeles", style: "59FIFTY Fitted", colour: "Black", crown: "#121212", brim: "#121212", ink: "#ffffff", mark: "LA", price: 7500, cost: 3200, sizes: ["7 1/8", "7 1/4", "7 3/8"], featured: false, ageDays: 70, soldOut: true },
-  { name: "Atlanta 9FORTY Adjustable, Navy", team: "Atlanta", style: "9FORTY Adjustable", colour: "Navy and red", crown: "#13274f", brim: "#ce1141", ink: "#ce1141", mark: "A", price: 5500, cost: 2200, sizes: ["One size"], featured: false, ageDays: 25 },
-  { name: "New York 9FORTY Adjustable, Black", team: "New York", style: "9FORTY Adjustable", colour: "Black", crown: "#1a1a1a", brim: "#1a1a1a", ink: "#ffffff", mark: "NY", price: 5500, cost: 2200, sizes: ["One size"], featured: false, ageDays: 18 },
-  { name: "Miami 9FIFTY Snapback, Teal", team: "Miami", style: "9FIFTY Snapback", colour: "Teal and orange", crown: "#00a3ad", brim: "#ef7f1a", ink: "#ffffff", mark: "M", price: 6500, cost: 2700, sizes: ["One size"], featured: true, ageDays: 2 },
-  { name: "Houston 9FIFTY Snapback, Navy", team: "Houston", style: "9FIFTY Snapback", colour: "Navy and orange", crown: "#002d62", brim: "#eb6e1f", ink: "#eb6e1f", mark: "H", price: 6500, cost: 2700, sizes: ["One size"], featured: false, ageDays: 33 },
-  { name: "Chicago 9FIFTY Snapback, Royal", team: "Chicago", style: "9FIFTY Snapback", colour: "Royal blue", crown: "#0e3386", brim: "#0e3386", ink: "#cc3433", mark: "C", price: 6500, cost: 2700, sizes: ["One size"], featured: false, ageDays: 48 },
+  { name: "New York Yankees 59FIFTY Fitted, Black", team: "New York Yankees", style: "59FIFTY Fitted", colour: "Black, white logo", price: 7500, cost: 3200, sizes: FITTED, featured: true, ageDays: 4 },
+  { name: "New York Yankees 9FORTY Adjustable, Stone", team: "New York Yankees", style: "9FORTY Adjustable", colour: "Stone, white logo", price: 5500, cost: 2200, sizes: ["One size"], featured: true, ageDays: 2 },
+  { name: "New York Mets 59FIFTY Fitted, Royal", team: "New York Mets", style: "59FIFTY Fitted", colour: "Royal blue, orange logo", price: 7500, cost: 3200, sizes: FITTED.slice(1, 7), featured: true, ageDays: 9 },
+  { name: "Los Angeles Dodgers 9FORTY Youth Adjustable, Grey", team: "Los Angeles Dodgers", style: "9FORTY Adjustable", colour: "Grey, grey logo", price: 4500, cost: 1800, sizes: ["Youth"], featured: true, ageDays: 6 },
+  { name: "New York Yankees 59FIFTY Fitted, Navy", team: "New York Yankees", style: "59FIFTY Fitted", colour: "Navy, white logo", price: 7500, cost: 3200, sizes: FITTED, featured: false, ageDays: 40 },
+  { name: "Los Angeles Dodgers 59FIFTY Fitted, Royal", team: "Los Angeles Dodgers", style: "59FIFTY Fitted", colour: "Royal blue, white logo", price: 7500, cost: 3200, sizes: FITTED.slice(1, 7), featured: false, ageDays: 33 },
+  { name: "Los Angeles Dodgers 59FIFTY Fitted, Black", team: "Los Angeles Dodgers", style: "59FIFTY Fitted", colour: "Black, white logo", price: 7500, cost: 3200, sizes: ["7 1/8", "7 1/4", "7 3/8"], featured: false, ageDays: 70, soldOut: true },
+  { name: "Boston Red Sox 59FIFTY Fitted, Navy", team: "Boston Red Sox", style: "59FIFTY Fitted", colour: "Navy, red logo", price: 7500, cost: 3300, sizes: FITTED.slice(2, 7), featured: false, ageDays: 55 },
+  { name: "Atlanta Braves 9FORTY Adjustable, Navy", team: "Atlanta Braves", style: "9FORTY Adjustable", colour: "Navy, red brim", price: 5500, cost: 2200, sizes: ["One size"], featured: false, ageDays: 25 },
+  { name: "Chicago Cubs 9FIFTY Snapback, Royal", team: "Chicago Cubs", style: "9FIFTY Snapback", colour: "Royal blue", price: 6500, cost: 2700, sizes: ["One size"], featured: false, ageDays: 18 },
+  { name: "Miami Marlins 9FIFTY Snapback, Black", team: "Miami Marlins", style: "9FIFTY Snapback", colour: "Black, teal logo", price: 6500, cost: 2700, sizes: ["One size"], featured: false, ageDays: 12 },
 ];
 
-/** An original front-view cap drawing (and a side view), used instead of photos in the demo. */
-function capSvg(c, view) {
-  const bg = view === "front" ? ["#e7f1ef", "#efe7d8"] : ["#efe7d8", "#e3edf0"];
-  const letters = c.mark.length > 1 ? 112 : 150;
-  const front = `
-    <path d="M128 352 C128 170 205 92 300 92 C395 92 472 170 472 352 Z" fill="${c.crown}"/>
-    <path d="M300 96 L300 352 M300 96 C258 150 232 250 222 352 M300 96 C342 150 368 250 378 352" stroke="rgba(0,0,0,.22)" stroke-width="3" fill="none"/>
-    <circle cx="300" cy="94" r="12" fill="${c.crown}" stroke="rgba(0,0,0,.25)" stroke-width="3"/>
-    <circle cx="200" cy="190" r="5" fill="rgba(0,0,0,.3)"/><circle cx="400" cy="190" r="5" fill="rgba(0,0,0,.3)"/>
-    <text x="300" y="${c.mark.length > 1 ? 278 : 290}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="${letters}" fill="${c.ink}" stroke="rgba(0,0,0,.18)" stroke-width="2">${c.mark}</text>
-    <path d="M96 352 Q300 316 504 352 Q512 404 300 418 Q88 404 96 352 Z" fill="${c.brim}"/>
-    <path d="M96 352 Q300 316 504 352" stroke="rgba(255,255,255,.18)" stroke-width="4" fill="none"/>
-    <path d="M140 372 Q300 352 460 372" stroke="rgba(0,0,0,.18)" stroke-width="2" stroke-dasharray="6 7" fill="none"/>`;
-  const side = `
-    <path d="M150 360 C150 190 240 110 330 110 C430 110 480 210 480 360 Z" fill="${c.crown}"/>
-    <path d="M330 112 C300 190 290 280 292 360" stroke="rgba(0,0,0,.22)" stroke-width="3" fill="none"/>
-    <circle cx="330" cy="110" r="12" fill="${c.crown}" stroke="rgba(0,0,0,.25)" stroke-width="3"/>
-    <circle cx="400" cy="200" r="5" fill="rgba(0,0,0,.3)"/>
-    <path d="M60 352 Q160 330 290 352 L290 372 Q160 360 60 378 Z" fill="${c.brim}"/>
-    <path d="M150 360 L480 360 L480 372 L150 372 Z" fill="rgba(0,0,0,.25)"/>
-    <text x="410" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="34" fill="${c.ink}" opacity=".9">${c.mark}</text>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="1600" height="1600">
-    <defs><radialGradient id="g" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="${bg[0]}"/><stop offset="1" stop-color="${bg[1]}"/></radialGradient></defs>
-    <rect width="600" height="600" fill="url(#g)"/>
-    <ellipse cx="300" cy="460" rx="210" ry="22" fill="rgba(6,47,55,.12)"/>
-    ${view === "front" ? front : side}
-    <text x="300" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" letter-spacing="4" fill="rgba(6,47,55,.45)">DEMO IMAGE</text>
-  </svg>`;
-}
-
-console.log("Drawing cap images…");
+console.log("Preparing photo converter…");
 const browser = await chromium.launch();
 const page = await browser.newPage();
-async function webp(svg, size) {
+/** Resizes a real photo to a square WebP (cap centred on white), like the dashboard uploader does. */
+async function webpFromFile(file, size) {
+  const ext = file.split(".").pop().toLowerCase();
+  const mime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+  const data = readFileSync(file).toString("base64");
   return page.evaluate(
-    async ({ svg, size }) => {
+    async ({ data, mime, size }) => {
       const img = new Image();
-      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+      img.src = `data:${mime};base64,${data}`;
       await img.decode();
       const c = document.createElement("canvas");
       c.width = size;
       c.height = size;
-      c.getContext("2d").drawImage(img, 0, 0, size, size);
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, size, size);
+      const scale = Math.min(size / img.width, size / img.height) * 0.92;
+      const w = img.width * scale, h = img.height * scale;
+      ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
       return c.toDataURL("image/webp", 0.86).split(",")[1];
     },
-    { svg, size },
+    { data, mime, size },
   );
 }
+const photosFor = (slug) =>
+  ["", "-2", "-3"]
+    .map((suffix) => ["jpg", "jpeg", "png", "webp"].map((e) => `demo-photos/${slug}${suffix}.${e}`).find((f) => existsSync(f)))
+    .filter(Boolean);
 
 console.log("Adding caps…");
 const variants = {}; // name -> [{id,size}]
@@ -170,15 +156,15 @@ for (const c of caps) {
   const { id } = await one(
     `insert into public.products (slug, name, team, style, colour, description, price_cents, status, featured, created_at)
      values ($1,$2,$3,$4,$5,$6,$7,'active',$8, now() - ($9 || ' days')::interval) returning id`,
-    [slug, c.name, c.team, c.style, c.colour, `Demo product for testing. ${c.style}, ${c.colour.toLowerCase()}.`, c.price, c.featured, String(c.ageDays)],
+    [slug, c.name, c.team, c.style, c.colour, `Authentic ${c.style} cap. ${c.colour}. Demo listing: price and stock are sample values.`, c.price, c.featured, String(c.ageDays)],
   );
   productIds[c.name] = id;
   await q("insert into public.product_costs (product_id, cost_cents) values ($1,$2)", [id, c.cost]);
   const images = [];
-  for (const view of ["front", "side"]) {
+  for (const file of photosFor(slug)) {
     const base = `products/${id}/${crypto.randomUUID()}`;
     for (const size of [600, 1600]) {
-      const b64 = await webp(capSvg(c, view), size);
+      const b64 = await webpFromFile(file, size);
       const { error } = await admin.storage.from("product-photos").upload(`${base}-${size}.webp`, Buffer.from(b64, "base64"), { contentType: "image/webp", upsert: true });
       if (error) throw error;
     }
@@ -189,7 +175,7 @@ for (const c of caps) {
   for (const [i, size] of c.sizes.entries()) {
     const { id: vid } = await one("insert into public.product_variants (product_id, size, sort) values ($1,$2,$3) returning id", [id, size, i]);
     variants[c.name].push({ id: vid, size });
-    const start = c.soldOut ? 1 : size === "One size" ? 12 : [6, 7, 8].includes(i + 1) ? 2 : 5;
+    const start = c.soldOut ? 1 : ["One size", "Youth"].includes(size) ? 12 : [6, 7, 8].includes(i + 1) ? 2 : 5;
     await as("jay", "select public.adjust_stock($1, $2, 'initial', 'Demo opening count')", [vid, start]);
   }
 }
@@ -254,8 +240,8 @@ await as("kim", "update public.customers set notes = 'Demo note: prefers WhatsAp
 console.log("Suppliers, purchase orders and deliveries…");
 const { id: supA } = await one("insert into public.suppliers (name, contact_name, phone, email, lead_time_days, notes) values ('Demo Supplier Miami', 'Demo contact', 'Demo: 000 0000', 'supplier-a@example.com', 10, 'Demo: minimum 24 caps, pays by bank transfer.') returning id");
 const { id: supB } = await one("insert into public.suppliers (name, contact_name, lead_time_days, notes) values ('Demo Supplier Panama', 'Demo contact', 21, 'Demo: cheaper, slower.') returning id");
-const ny = variants["New York 59FIFTY Fitted, Navy"];
-const la = variants["Los Angeles 59FIFTY Fitted, Royal"];
+const ny = variants["New York Yankees 59FIFTY Fitted, Navy"];
+const la = variants["Los Angeles Dodgers 59FIFTY Fitted, Royal"];
 // received last week
 const { id: po1 } = await one("insert into public.purchase_orders (supplier_id, shipping_cents, expected_on, notes, created_by) values ($1, 6500, current_date - 6, 'Demo order', $2) returning id", [supA, team.shan]);
 for (const v of ny.slice(2, 6)) await q("insert into public.purchase_order_items (po_id, variant_id, quantity_ordered, unit_cost_cents) values ($1,$2,4,3200)", [po1, v.id]);
@@ -270,7 +256,7 @@ for (const v of la.slice(2, 6)) await q("insert into public.purchase_order_items
 await as("shan", "select public.set_po_status($1, 'ordered')", [po2]);
 // a draft
 const { id: po3 } = await one("insert into public.purchase_orders (supplier_id, created_by, notes) values ($1, $2, 'Demo draft: snapbacks for December') returning id", [supA, team.maria]);
-await q("insert into public.purchase_order_items (po_id, variant_id, quantity_ordered, unit_cost_cents) values ($1,$2,12,2700)", [po3, variants["Miami 9FIFTY Snapback, Teal"][0].id]);
+await q("insert into public.purchase_order_items (po_id, variant_id, quantity_ordered, unit_cost_cents) values ($1,$2,12,2700)", [po3, variants["Chicago Cubs 9FIFTY Snapback, Royal"][0].id]);
 
 // ---------------------------------------------------------------- expenses
 const month = new Date(now - 4 * 3600_000).toISOString().slice(0, 8);
@@ -289,7 +275,7 @@ for (const [day, cat, amt, desc] of [
 console.log("Tasks, shifts, chats…");
 const task = async (who, title, details, priority, dueDays, assignee) =>
   (await as(who, "select public.create_task($1,$2,$3, current_date + $4::int, $5) as id", [title, details, priority, dueDays, team[assignee]]))[0].id;
-const t1 = await task("shan", "Photograph the San Francisco caps", "Demo task. Front and side, on the white table.", "high", 1, "jay");
+const t1 = await task("shan", "Photograph the Mets and Dodgers caps", "Demo task. Front and side, on the white table.", "high", 1, "jay");
 const t2 = await task("shan", "Answer Instagram DMs about restocks", null, "normal", 0, "kim");
 const t3 = await task("maria", "Count the 7 1/4 fitted shelf", "Demo task. Compare with Stock page.", "normal", -1, "jay");
 const t4 = await task("shan", "Write the returns policy", "Demo task.", "normal", 5, "shan");
@@ -318,8 +304,8 @@ const chat = async (name, contact, msgs, reply) => {
   if (reply) await as("kim", "select public.chat_reply($1, $2)", [id, reply]);
   return id;
 };
-await chat("Melissa (demo)", null, ["Hi! Is the Miami snapback adjustable for small heads?", "It's for my son, he's 12."], null);
-const c2 = await chat("Jordy (demo)", "jordy.demo@example.com", ["Do you have New York fitted in 7 5/8?"], "Hi Jordy, yes we have it. Want me to set one aside for pickup?");
+await chat("Melissa (demo)", null, ["Hi! Is the Dodgers youth cap adjustable for small heads?", "It's for my son, he's 12."], null);
+const c2 = await chat("Jordy (demo)", "jordy.demo@example.com", ["Do you have the Yankees black fitted in 7 5/8?"], "Hi Jordy, yes we have it. Want me to set one aside for pickup?");
 await q("select public.chat_send((select public_token from public.conversations where id = $1), 'Yes please, Saturday')", [c2]);
 const c3 = await chat("Natasha (demo)", null, ["What time do you close today?"], "Demo reply: we close at 18:00.");
 await as("kim", "select public.chat_update($1, 'closed')", [c3]);
